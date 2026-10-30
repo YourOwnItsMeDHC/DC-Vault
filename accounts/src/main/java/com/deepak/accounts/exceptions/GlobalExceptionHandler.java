@@ -25,7 +25,12 @@ public class GlobalExceptionHandler  extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
     }
 
-    private static ErrorResponseDto getErrorResponseDTO(CustomerAlreadyExistsException exception, WebRequest webRequest) {
+    public ResponseEntity<ErrorResponseDto> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest webRequest) {
+        ErrorResponseDto errorResponseDto = getErrorResponseDTO(exception, webRequest);
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
+    }
+
+    private static ErrorResponseDto getErrorResponseDTO(Exception exception, WebRequest webRequest) {
         return new ErrorResponseDto(
                 webRequest.getDescription(false),
                 HttpStatus.BAD_REQUEST,

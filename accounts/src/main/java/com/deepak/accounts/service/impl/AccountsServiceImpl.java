@@ -1,10 +1,13 @@
 package com.deepak.accounts.service.impl;
 
 import com.deepak.accounts.constants.AccountsConstants;
+import com.deepak.accounts.dto.AccountsDto;
 import com.deepak.accounts.dto.CustomerDto;
 import com.deepak.accounts.entity.Accounts;
 import com.deepak.accounts.entity.Customer;
 import com.deepak.accounts.exceptions.CustomerAlreadyExistsException;
+import com.deepak.accounts.exceptions.ResourceNotFoundException;
+import com.deepak.accounts.mapper.AccountsMapper;
 import com.deepak.accounts.mapper.CustomerMapper;
 import com.deepak.accounts.repository.AccountsRepository;
 import com.deepak.accounts.repository.CustomerRepository;
@@ -38,6 +41,24 @@ public class AccountsServiceImpl implements IAccountsService {
         customer.setCreatedBy("Deepak Chourasiya");
         Customer savedCustomer = customerRepository.save(customer);
         accountsRepository.save(createNewAccount(savedCustomer));
+    }
+
+    /**
+     * @param mobileNumber
+     * @return Account details based on a given mobile number
+     */
+    @Override
+    public CustomerDto fetchAccount(String mobileNumber) {
+        Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(
+                () -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber)
+        );
+
+        Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(
+                () -> new ResourceNotFoundException("Accounts", "customerId", customer.getCustomerId().toString())
+        );
+        CustomerDto customerDto = CustomerMapper.mapToCustomerDto(customer, new CustomerDto());
+        customerDto.setAccountsDto(AccountsMapper.mapToAccountsDto(accounts, new AccountsDto()));
+        return customerDto;
     }
 
     /**
