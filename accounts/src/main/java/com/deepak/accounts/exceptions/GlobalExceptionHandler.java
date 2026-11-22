@@ -12,6 +12,11 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobalExceptionHandler  extends ResponseEntityExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception exception, WebRequest webRequest) {
+        ErrorResponseDto errorResponseDto = getErrorResponseDTO(exception, HttpStatus.INTERNAL_SERVER_ERROR, webRequest);
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     /**
      *
      * @param exception
@@ -21,19 +26,19 @@ public class GlobalExceptionHandler  extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CustomerAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDto> handleCustomerAlreadyExistsException(CustomerAlreadyExistsException exception,
                                                                                  WebRequest webRequest){
-        ErrorResponseDto errorResponseDTO = getErrorResponseDTO(exception, webRequest);
+        ErrorResponseDto errorResponseDTO = getErrorResponseDTO(exception, HttpStatus.BAD_REQUEST, webRequest);
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_REQUEST);
     }
 
     public ResponseEntity<ErrorResponseDto> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest webRequest) {
-        ErrorResponseDto errorResponseDto = getErrorResponseDTO(exception, webRequest);
+        ErrorResponseDto errorResponseDto = getErrorResponseDTO(exception, HttpStatus.BAD_REQUEST, webRequest);
         return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
     }
 
-    private static ErrorResponseDto getErrorResponseDTO(Exception exception, WebRequest webRequest) {
+    private static ErrorResponseDto getErrorResponseDTO(Exception exception, HttpStatus httpStatus, WebRequest webRequest) {
         return new ErrorResponseDto(
                 webRequest.getDescription(false),
-                HttpStatus.BAD_REQUEST,
+                httpStatus,
                 exception.getMessage(),
                 LocalDateTime.now()
         );
